@@ -176,6 +176,17 @@
 			};
 		};
 
+		gpio_led_pins {
+			qcom,pins = "gpio128", "gpio125", "gpio126";
+			qcom,num-grp-pins = <3>;
+			label = "gpio-led-pins";
+			gpio_led_off: led_off {
+				drive-strength = <2>;
+				bias-disable;
+				output-low;
+			};
+		};
+
 		tlmm_pmi_flash_led {
 			rear_flash_led_enable: rear_flash_led_enable {
 				mux {

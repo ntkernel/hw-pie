@@ -12,8 +12,8 @@
  */
 
 #include "msm8937-pinctrl.dtsi"
-#include "msm8937-camera-sensor-mtp.dtsi"
-
+/*#include "msm8937-camera-sensor-mtp.dtsi"*/
+/*
 &flash_led {
 	compatible = "qcom,qpnp-flash-led";
 	reg = <0xd300 0x100>;
@@ -22,7 +22,7 @@
 	pinctrl-1 = <&rear_flash_led_disable>;
 	qcom,follow-otst2-rb-disabled;
 };
-
+*/
 &wled {
 	qcom,cons-sync-write-delay-us = <1000>;
 };
@@ -35,6 +35,7 @@
 		pinctrl-0 = <&gpio_key_active>;
 		pinctrl-1 = <&gpio_key_suspend>;
 
+		/*delete these two keys for gpio128 is for leds
 		camera_focus {
 			label = "camera_focus";
 			gpios = <&tlmm 128 0x1>;
@@ -49,7 +50,7 @@
 			linux,input-type = <1>;
 			linux,code = <0x2fe>;
 			debounce-interval = <15>;
-		};
+		};*/
 
 		vol_up {
 			label = "volume_up";
@@ -77,7 +78,7 @@
 
 &pmi_haptic{
 	qcom,wave-play-rate-us = <4165>;
-	qcom,actuator-type = "lra";
+	qcom,actuator-type = "erm";
 	qcom,lra-auto-res-mode="qwd";
 	qcom,lra-high-z="opt1";
 	qcom,lra-res-cal-period = <4>;
@@ -131,7 +132,8 @@
 &sdhc_1 {
 	/* device core power supply */
 	vdd-supply = <&pm8937_l8>;
-	qcom,vdd-voltage-level = <2900000 2900000>;
+	qcom,vdd-always-on;
+	qcom,vdd-voltage-level = <2950000 2950000>;
 	qcom,vdd-current-level = <200 570000>;
 
 	/* device communication power supply */
