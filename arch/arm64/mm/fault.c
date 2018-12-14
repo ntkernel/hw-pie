@@ -42,6 +42,10 @@
 
 #include <trace/events/exception.h>
 
+#ifdef CONFIG_HUAWEI_BOOST_SIGKILL_FREE
+#include <linux/boost_sigkill_free.h>
+#endif
+
 static const char *fault_name(unsigned int esr);
 
 /*
@@ -130,11 +134,27 @@ static void __do_user_fault(struct task_struct *tsk, unsigned long addr,
 
 	if (show_unhandled_signals && unhandled_signal(tsk, sig) &&
 	    printk_ratelimit()) {
+#if 1
+		/* when appeared user exception and repeated,
+		   just print the first exception log */
+		static pid_t prev_tgid=0xFFFF;
+		static unsigned long prev_addr=0xFFFFFFFF;
+		if (prev_tgid != tsk->tgid || prev_addr != addr ) {
+			pr_info("%s[%d]: unhandled %s (%d) at 0x%08lx, esr 0x%03x\n",
+				tsk->comm, task_pid_nr(tsk), fault_name(esr), sig,
+				addr, esr);
+			show_pte(tsk->mm, addr);
+			show_regs(regs);
+			prev_tgid = tsk->tgid;
+			prev_addr = addr;
+		}
+#else
 		pr_info("%s[%d]: unhandled %s (%d) at 0x%08lx, esr 0x%03x\n",
 			tsk->comm, task_pid_nr(tsk), fault_name(esr), sig,
 			addr, esr);
 		show_pte(tsk->mm, addr);
 		show_regs(regs);
+#endif
 	}
 
 	tsk->thread.fault_address = addr;
@@ -170,6 +190,15 @@ static int __do_page_fault(struct mm_struct *mm, unsigned long addr,
 {
 	struct vm_area_struct *vma;
 	int fault;
+
+#ifdef CONFIG_HUAWEI_BOOST_SIGKILL_FREE
+	if (unlikely(test_bit(MMF_FAST_FREEING, &mm->flags))) {
+		task_clear_jobctl_pending(tsk, JOBCTL_PENDING_MASK);
+		sigaddset(&tsk->pending.signal, SIGKILL);
+		set_tsk_thread_flag(tsk, TIF_SIGPENDING);
+		return VM_FAULT_BADMAP;
+	}
+#endif
 
 	vma = find_vma(mm, addr);
 	fault = VM_FAULT_BADMAP;

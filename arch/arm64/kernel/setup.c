@@ -63,6 +63,11 @@
 #include <asm/efi.h>
 #include <asm/system_misc.h>
 
+#ifdef CONFIG_DUMP_SYS_INFO
+#include <linux/module.h>
+#include <linux/srecorder.h>
+#endif
+
 unsigned int boot_reason;
 EXPORT_SYMBOL(boot_reason);
 
@@ -73,6 +78,14 @@ char* (*arch_read_hardware_id)(void);
 const char *machine_name;
 
 phys_addr_t __fdt_pointer __initdata;
+
+#ifdef CONFIG_DUMP_SYS_INFO
+unsigned long get_cpu_name(void)
+{
+    return (unsigned long)&cpu_name;
+}
+EXPORT_SYMBOL(get_cpu_name);
+#endif
 
 /*
  * Standard memory resources
